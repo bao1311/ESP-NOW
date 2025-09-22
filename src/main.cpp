@@ -2,12 +2,13 @@
 #include <esp_now.h>
 #include <WiFi.h>
 #include <esp_wifi.h>
-
+#include <string.h>
+using namespace std;
 // put function declarations here:
 int myFunction(int, int);
 uint8_t rightAddress[] = {0x44, 0x1D, 0x64, 0xF1, 0x02, 0x28};
 uint8_t leftAddress[] = {0x44, 0x1D, 0x64, 0xF1, 0x73, 0x38};
-
+char myString[][50] = {"I am Bao", "I am currently learning ESP-NOW communication", "I love programming", "I learn how to use struct in C++"};
 // Data packet for receiver
 typedef struct test_struct {
   char message[50];
@@ -19,9 +20,9 @@ test_struct myData;
 void setup() {
   // put your setup code here, to run once:
   // Adjust the baud rate
-  Serial.begin(9600);
+  Serial.begin(115200);
 
-    // Initialize WiFi in STA mode (required for ESP-NOW)
+  // Initialize WiFi in STA mode (required for ESP-NOW)
   WiFi.mode(WIFI_STA);
 
 
@@ -35,6 +36,7 @@ void setup() {
   esp_now_peer_info_t peerInfo;
   memcpy(peerInfo.peer_addr, leftAddress, 6);
   peerInfo.channel = 1;  
+  peerInfo.ifidx = WIFI_IF_STA; // Ensure the interface is set to STA
   peerInfo.encrypt = false;
 
   // Add peer        
@@ -60,7 +62,7 @@ void loop() {
   delay(1000);            // Wait 1 second
  */
   Serial.println("Sending message to left node");
-  strcpy(myData.message, "Hello from ESP32");
+  strcpy(myData.message, myString[random(0,4)]); // Copy FROM myString TO myData.message
   myData.value = random(1,100);
   Serial.println("Mac address of the receiver: ");
   for (int i = 0; i < 6; i++) {
