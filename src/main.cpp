@@ -2,7 +2,8 @@
 #include <esp_now.h>
 #include <esp_wifi.h>
 #include <WiFi.h>
-
+#include <string>
+using namespace std;
 // Global value definition
 // put function declarations here:
 int myFunction(int, int);
@@ -20,7 +21,7 @@ void setup() {
   // put your setup code here, to run once:
 
   // In setup()
-  Serial.begin(9600);
+  Serial.begin(115200);
   WiFi.mode(WIFI_STA);
   if (esp_now_init() != ESP_OK) {
     Serial.println("Error initializing ESP-NOW");
