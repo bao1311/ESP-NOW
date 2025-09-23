@@ -4,6 +4,7 @@
 #include <esp_wifi.h>
 #include <string.h>
 #include <telemetry.h>
+#include <shared_functions.h>
 using namespace std;
 // put function declarations here:
 int myFunction(int, int);
@@ -74,18 +75,7 @@ void generateTelemetryData(telemetry_struct &myData) {
   myData.timestamp = timestamp[random(0,4)];
 }
 
-/*
-Help function to print MAC address in standard format
-*/
-void printMACAddress(const uint8_t* mac) {
-  for (int i = 0; i < 6; i++) {
-    Serial.print(mac[i], HEX);
-    if (i < 5) {
-      Serial.print(":");
-    }
-  }
-  Serial.println();
-}
+
 
 void loop() {
   // put your main code here, to run repeatedly:
