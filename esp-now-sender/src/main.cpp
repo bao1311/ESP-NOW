@@ -15,7 +15,7 @@ uint8_t leftAddress[] = {0x44, 0x1D, 0x64, 0xF1, 0x73, 0x38};
 */
 float latitude[] = {21.005, 21.006, 21.007, 21.008};
 float longitude[] = {105.843, 105.844, 105.845, 105.846};
-float attitude[] = {10.0, 20.0, 30.0, 40.0};
+float altitude[] = {10.0, 20.0, 30.0, 40.0};
 float speed[] = {0.1, 0.2, 0.3, 0.4};
 int batteryLevel[] = {100, 90, 80, 70};
 int signalStrength[] = {4, 3, 2, 1};
@@ -48,13 +48,14 @@ void setup() {
   esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE); // Set WiFi channel to 1
   // Peer info configuration
   esp_now_peer_info_t peerInfo;
-  memcpy(peerInfo.peer_addr, leftAddress, 6);
-  peerInfo.channel = 1;  
-  peerInfo.ifidx = WIFI_IF_STA; // Ensure the interface is set to STA
+  memcpy(peerInfo.peer_addr, leftAddress, sizeof(leftAddress));
+  // Set the channel and interface (Have to be the same as the sender)
+  peerInfo.channel = 1;
+  peerInfo.ifidx = WIFI_IF_STA; // Ensure the interface is set to STA (Station mode)
   peerInfo.encrypt = false;
 
-  // Add peer        
-  if (esp_now_add_peer(&peerInfo) != ESP_OK){
+  // Add peer
+  if (esp_now_add_peer(&peerInfo) != ESP_OK) {
     Serial.println("Failed to add peer");
     return;
   }
@@ -62,33 +63,44 @@ void setup() {
   
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
-  /*
-  Led blinking code (Does not work because esp32-devkit-v4 only have the power led)
-  */
- /*
-  digitalWrite(5, HIGH);  // Turn LED on
-  Serial.println(digitalRead(5)); // Print out the value of pin 2
-  delay(1000);            // Wait 1 second
-  digitalWrite(5, LOW);   // Turn LED off
-  Serial.println(digitalRead(5)); // Print out the value of pin 2
-  delay(1000);            // Wait 1 second
- */
-  Serial.println("Sending message to left node");
-  strcpy(myData.message, myString[random(0,4)]); // Copy FROM myString TO myData.message
-  myData.value = random(1,100);
-  Serial.println("Mac address of the receiver: ");
+void generateTelemetryData(telemetry_struct &myData) {
+  strcpy(myData.message, myString[random(0,4)]); // Copy FROM myString TO myData.message (C style string copy since we are copying to char array)
+  myData.latitude = latitude[random(0,4)];
+  myData.longitude = longitude[random(0,4)];
+  myData.altitude = altitude[random(0,4)];
+  myData.speed = speed[random(0,4)];
+  myData.batteryLevel = batteryLevel[random(0,4)];
+  myData.signalStrength = signalStrength[random(0,4)];
+  myData.timestamp = timestamp[random(0,4)];
+}
+
+/*
+Help function to print MAC address in standard format
+*/
+void printMACAddress(const uint8_t* mac) {
   for (int i = 0; i < 6; i++) {
-    Serial.print(leftAddress[i], HEX);
+    Serial.print(mac[i], HEX);
     if (i < 5) {
       Serial.print(":");
     }
   }
   Serial.println();
+}
 
+void loop() {
+  // put your main code here, to run repeatedly:
+
+  // Generate and send telemetry data
+  Serial.println("Sending message to left node");
+  generateTelemetryData(myData);
+  // Print MAC address of the receiver (debugging purpose)
+  Serial.println("Mac address of the receiver: ");
+  printMACAddress(leftAddress);
+  // Send data to the left esp32
   esp_err_t result = esp_now_send(leftAddress, (uint8_t *) &myData, sizeof(myData));
+  // Delay between sends
   delay(2000);
+  // Check the result of the send operation
   if (result == ESP_OK) {
     Serial.println("Sent with success");
   }
@@ -99,6 +111,6 @@ void loop() {
 }
 
 // put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
-}
+// int myFunction(int x, int y) {
+//   return x + y;
+// }
