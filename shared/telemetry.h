@@ -10,6 +10,7 @@ typedef struct {
     int batteryLevel;   // Battery level percentage
     int signalStrength; // Signal strength in dBm
     unsigned long timestamp; // Timestamp in milliseconds
+    char message[50]; // Message buffer
 } telemetry_struct;
 
 #endif // TELEMETRY_H
